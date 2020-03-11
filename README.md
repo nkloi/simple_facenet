@@ -59,8 +59,15 @@ train('face_align/', 'models/20180402-114759.pb', 'models/your_model.pkl')
 ```
 - ```align_mtcnn``` use MTCNN (Multi-task Cascaded Convolutional Networks) to find face and crop.
 ![MTCNN](image/mtcnn.png)
+(image cre: [kpzhang93.github.io](https://kpzhang93.github.io/MTCNN_face_detection_alignment/))
 - ```train``` facenet 
 ![FaceNet](image/facenet.png)
-
+(image cre: [towardsdatascience](https://towardsdatascience.com/a-facenet-style-approach-to-facial-recognition-dc0944efe8d1))
 ### 5. Detection:
 run ```detection.py```
+```python
+if __name__ == '__main__':
+    run('models', 'models/your_model.pkl', video_file='demo.mp4', output_file='demo.avi')
+```
+
+```video_file=None``` if you want to run internal camera.
