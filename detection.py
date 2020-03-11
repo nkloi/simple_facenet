@@ -36,7 +36,7 @@ import cv2
 from facenet.face_contrib import *
 
 
-def add_overlays(frame, faces, frame_rate, colors, confidence=0.5):
+def add_overlays(frame, faces, frame_rate, colors, confidence=0.4):
     if faces is not None:
         for idx, face in enumerate(faces):
             face_bb = face.bounding_box.astype(int)
@@ -46,24 +46,32 @@ def add_overlays(frame, faces, frame_rate, colors, confidence=0.5):
                     class_name = face.name
                 else:
                     class_name = 'Unknow'
-                cv2.putText(frame, class_name, (face_bb[0] + 5, face_bb[3] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6,
-                            colors[idx], thickness=1, lineType=2)
-                cv2.putText(frame, '{:.02f}'.format(face.prob * 100), (face_bb[0] + 5, face_bb[3] - 20),
+                    # class_name = face.name
+                cv2.putText(frame, class_name, (face_bb[0], face_bb[3] + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6,
+                            colors[idx], thickness=2, lineType=2)
+                cv2.putText(frame, '{:.02f}'.format(face.prob * 100), (face_bb[0], face_bb[3] + 40),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.6, colors[idx], thickness=1, lineType=2)
 
-    cv2.putText(frame, str(frame_rate) + " fps", (10, 30),
-                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0),
+    cv2.putText(frame, str(frame_rate) + " fps", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0),
                 thickness=2, lineType=2)
 
 
-def run(model_checkpoint, classifier):
+def run(model_checkpoint, classifier, video_file=None, output_file=None):
     frame_interval = 3  # Number of frames after which to run face detection
     fps_display_interval = 5  # seconds
     frame_rate = 0
     frame_count = 0
-
-    video_capture = cv2.VideoCapture(0)
-
+    if video_file is not None:
+        video_capture = cv2.VideoCapture(video_file)
+    else:
+        # Use internal camera
+        video_capture = cv2.VideoCapture(0)
+    ret, frame = video_capture.read()
+    width = frame.shape[1]
+    height = frame.shape[0]
+    if output_file is not None:
+        video_format = cv2.VideoWriter_fourcc(*'XVID')
+        out = cv2.VideoWriter(output_file, video_format, 20, (width, height))
     face_recognition = Recognition(model_checkpoint, classifier)
     start_time = time.time()
     colors = np.random.uniform(0, 255, size=(1, 3))
@@ -74,7 +82,7 @@ def run(model_checkpoint, classifier):
         if (frame_count % frame_interval) == 0:
             faces = face_recognition.identify(frame)
             for i in range(len(colors), len(faces)):
-                colors = np.append(colors, np.random.uniform(0, 255, size=(1, 3)), axis=0)
+                colors = np.append(colors, np.random.uniform(150, 255, size=(1, 3)), axis=0)
             # Check our current fps
             end_time = time.time()
             if (end_time - start_time) > fps_display_interval:
@@ -86,14 +94,17 @@ def run(model_checkpoint, classifier):
 
         frame_count += 1
         cv2.imshow('Video', frame)
-
+        if output_file is not None:
+            out.write(frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     # When everything is done, release the capture
+    if output_file is not None:
+        out.release()
     video_capture.release()
     cv2.destroyAllWindows()
 
 
 if __name__ == '__main__':
-    run('models', 'models/your_model.pkl')
+    run('models', 'models/your_model.pkl', video_file='demo.mp4', output_file='demo.avi')
