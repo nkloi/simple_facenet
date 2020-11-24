@@ -1,5 +1,6 @@
 # SIMPLE FACENET
 Video step by step: https://www.youtube.com/watch?v=-8jTTeXzfFc&list=PLUzMg0FYFJETawSkez0b9C41ByOo6_N5L&index=3
+
 (Fork and edit from repo: https://github.com/davidsandberg/facenet)
 
 ### 1. Colect data:
